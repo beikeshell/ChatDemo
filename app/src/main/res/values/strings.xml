@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ChatDemo</string>
+    <string name="create_muc_room">创建聊天室</string>
+    <string name="add_friend">添加好友</string>
+</resources>
