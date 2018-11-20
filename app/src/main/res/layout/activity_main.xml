@@ -84,8 +84,6 @@
             </RelativeLayout>
         </LinearLayout>
 
-
-
     </android.support.design.widget.CoordinatorLayout>
 
     <android.support.design.widget.NavigationView
