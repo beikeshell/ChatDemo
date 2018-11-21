@@ -13,6 +13,18 @@ import android.view.inputmethod.InputMethodManager;
 public class BaseActivity extends AppCompatActivity {
 
     @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ActivityManager.addActivity(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ActivityManager.removeActivity(this);
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         if (event.getAction() == MotionEvent.ACTION_DOWN) {

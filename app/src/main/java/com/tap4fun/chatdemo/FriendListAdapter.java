@@ -53,17 +53,6 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Vi
             }
         });
 
-        holder.friendItemView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                int position = holder.getAdapterPosition();
-                FriendItem friendItem = mFriendList.get(position);
-                Toast.makeText(view.getContext(), "you long clicked view" + friendItem.getNickName(),
-                        Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
-
         return holder;
     }
 

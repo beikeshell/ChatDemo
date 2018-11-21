@@ -1,5 +1,7 @@
 package com.tap4fun.chatdemo;
 
+import java.util.List;
+
 public class ChatJniInterface {
 
     public static native void init();
@@ -19,4 +21,8 @@ public class ChatJniInterface {
     public static native void quitMucRoom(String roomId);
 
     public static native void getMucRoomList();
+
+    public static native void getMucRoomMembers(String mucRoomId);
+
+    //public static native void inviteFriend(String currentMucRoomId, List<String> ids);
 }

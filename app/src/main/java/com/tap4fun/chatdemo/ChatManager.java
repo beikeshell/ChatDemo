@@ -1,12 +1,15 @@
 package com.tap4fun.chatdemo;
 
 import android.util.Log;
+import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class ChatManager {
+
+
 
     interface MucRoomListListener {
         void onMucRoomListChanged();
@@ -28,7 +31,12 @@ public class ChatManager {
         void onMessageReceived();
     }
 
-    private static String mUserId = "";
+    interface OnGetMucRoomMemberListListener {
+        void onGetMucRoomMembersResult(String mucRoomId, List<String> members);
+    }
+
+    private static String mUserId = "UNKNOWN";
+    private static String mUserNickName = "UNKNOWN";
 
     private static final String TAG = "ChatManager";
 
@@ -37,6 +45,7 @@ public class ChatManager {
     private List<FriendItem> mFriendList = new ArrayList<>();
     private MucRoomListListener mMucRoomListListener;
     private FriendListListener mFriendListListener;
+    private OnGetMucRoomMemberListListener mOnGetMucRoomMembersListener;
     private boolean mMucRoomListCached = false;
     private boolean mFriendListCached = false;
     private boolean mLoginResult;
@@ -45,12 +54,15 @@ public class ChatManager {
 
     private HashMap<String, List<ChatMessage>> friendMsgCache = new HashMap<>();
     private HashMap<String, List<ChatMessage>> mucMsgCache = new HashMap<>();
+    private HashMap<String, List<String>> mMucRoomMembersCache = new HashMap<>();
 
     private List<P2PMessageReceivedListener> mP2PMessageReceivedListenerList = new ArrayList<>();
     private List<P2GMessageReceivedListener> mP2GMessageReceivedListenerList = new ArrayList<>();
 
     private boolean mP2PMessageReceivedCached = false;
     private boolean mP2GMessageReceivedCached = false;
+
+    private String mCurrentMucRoomId;
 
     public static ChatManager getInstance() {
         if (null == sInstance) {
@@ -77,6 +89,7 @@ public class ChatManager {
                     && null != IP && !"".equals(IP)
                     && null != port && !"".equals(port)) {
                 mUserId = userName;
+                mUserNickName = nickName;
                 ChatJniInterface.login(userName, nickName, password, IP, port);
             }
         } catch (NullPointerException e) {
@@ -185,7 +198,8 @@ public class ChatManager {
     public void setLoginResult(boolean result) {
         mLoginResult = result;
         if (!result) {
-            mUserId  = "";
+            mUserId  = "UNKNOWN";
+            mUserNickName = "UNKNOWN";
         }
         notifyLoginResult();
     }
@@ -337,5 +351,49 @@ public class ChatManager {
         if (null != roomId && !roomId.isEmpty()) {
             ChatJniInterface.quitMucRoom(roomId);
         }
+    }
+
+    public String getUserId() { return mUserId; }
+    public String getUserNickName() { return mUserNickName; }
+
+    public void setOnGetMucRoomMembersListener(OnGetMucRoomMemberListListener listener) {
+        mOnGetMucRoomMembersListener = listener;
+    }
+
+    public void getMucRoomMembers(String mucRoomId) {
+        if (null != mucRoomId && !mucRoomId.isEmpty()) {
+            if (mMucRoomMembersCache.containsKey(mucRoomId)) {
+                if (null != mOnGetMucRoomMembersListener) {
+                    mOnGetMucRoomMembersListener.onGetMucRoomMembersResult(mucRoomId, mMucRoomMembersCache.get(mucRoomId));
+                }
+            } else {
+                ChatJniInterface.getMucRoomMembers(mucRoomId);
+            }
+        }
+    }
+
+    public void onGetMucRoomMembers(String mucRoomId, List<String> members, boolean success) {
+        if (success) {
+            if (!mMucRoomMembersCache.containsKey(mucRoomId)) {
+                mMucRoomMembersCache.put(mucRoomId, new ArrayList<String>());
+            }
+            mMucRoomMembersCache.get(mucRoomId).clear();
+            mMucRoomMembersCache.get(mucRoomId).addAll(members);
+            if (null != mOnGetMucRoomMembersListener) {
+                mOnGetMucRoomMembersListener.onGetMucRoomMembersResult(mucRoomId, mMucRoomMembersCache.get(mucRoomId));
+            }
+        } else {
+            Log.e(TAG, "onGetMucRoomMembers: failed!");
+        }
+    }
+
+    public void setCurrentMucRoom(String currentMucId) {
+        mCurrentMucRoomId = currentMucId;
+    }
+
+    public String getCurrentMucRoomId() { return mCurrentMucRoomId; }
+
+    public void inviteFriend(String currentMucRoomId, List<String> ids) {
+        //ChatJniInterface.inviteFriend(currentMucRoomId, ids);
     }
 }

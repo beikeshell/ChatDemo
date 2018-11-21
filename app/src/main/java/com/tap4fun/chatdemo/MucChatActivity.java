@@ -1,5 +1,6 @@
 package com.tap4fun.chatdemo;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -18,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,33 +37,24 @@ public class MucChatActivity extends BaseActivity implements ChatManager.P2GMess
     private RecyclerView msgRecyclerView;
     private MucChatMsgListAdapter adapter;
     private String currentMucId;
+    private TextView mMucRoomIdTV;
+    private ImageView mToUserListIV;
 
     private DrawerLayout mDrawerLayout;
-    private NavigationView mNavView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_muc_chat);
-        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        //setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
-        mNavView= findViewById(R.id.nav_view);
-        mNavView.setCheckedItem(R.id.nav_call);
-        mNavView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                mDrawerLayout.closeDrawers();
-                return true;
-            }
-        });
-
-        ActionBar actionBar = getSupportActionBar();
+        /*ActionBar actionBar = getSupportActionBar();
         if (null != actionBar) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
-        }
+            //actionBar.setDisplayHomeAsUpEnabled(true);
+            //actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        }*/
 
         initMsgs();
         inputText = findViewById(R.id.muc_chat_edit_text);
@@ -111,7 +105,34 @@ public class MucChatActivity extends BaseActivity implements ChatManager.P2GMess
             }
         });*/
         currentMucId = getIntent().getStringExtra("currentMucId");
+        mMucRoomIdTV = findViewById(R.id.muc_room_id);
+        mMucRoomIdTV.setText(currentMucId);
+
+        ChatManager.getInstance().setCurrentMucRoom(currentMucId);
+
+        mToUserListIV = findViewById(R.id.muc_to_user_list);
+        mToUserListIV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDrawerLayout.openDrawer(GravityCompat.END);
+            }
+        });
+
         ChatManager.getInstance().registerP2GMessageReceivedListener(this);
+    }
+
+    @Override
+    public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
+        return super.onCreateView(parent, name, context, attrs);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        msgList.clear();
+        msgList.addAll(ChatManager.getInstance().getMucMessage(currentMucId));
+        adapter.notifyDataSetChanged();
+        msgRecyclerView.scrollToPosition(msgList.size() - 1);
     }
 
     private void initMsgs() {
@@ -128,6 +149,7 @@ public class MucChatActivity extends BaseActivity implements ChatManager.P2GMess
         MucMessage mucMessage5 = new MucMessage("", "Have a good night.", MucMessage.TYPE_SENT);
         msgList.add(mucMessage5);*/
     }
+
 
     @Override
     public void onMessageReceived() {
@@ -150,37 +172,5 @@ public class MucChatActivity extends BaseActivity implements ChatManager.P2GMess
     protected void onDestroy() {
         ChatManager.getInstance().unRegisterP2GMessageReceivedListener(this);
         super.onDestroy();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home: {
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                break;
-            }
-            case R.id.backup: {
-                Toast.makeText(this, "Your clicked Backup", Toast.LENGTH_SHORT).show();
-                break;
-            }
-            case R.id.delete: {
-                Toast.makeText(this, "Your clicked Delete", Toast.LENGTH_SHORT).show();
-                break;
-            }
-            case R.id.settings: {
-                Toast.makeText(this, "Your clicked Settings", Toast.LENGTH_SHORT).show();
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar, menu);
-        return true;
     }
 }

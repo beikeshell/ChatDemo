@@ -36,35 +36,23 @@ public class P2PChatActivity extends BaseActivity implements ChatManager.P2PMess
     private P2PChatMsgListAdapter adapter;
     private String toUserId;
     private String toUserNickName;
+    private TextView mFriendIdTV;
 
     private DrawerLayout mDrawerLayout;
-    private NavigationView mNavView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_p2p_chat);
-        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        //setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
-
-        mNavView= findViewById(R.id.nav_view);
-        mNavView.setCheckedItem(R.id.nav_call);
-        mNavView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                mDrawerLayout.closeDrawers();
-                return true;
-            }
-        });
 
         ActionBar actionBar = getSupportActionBar();
         if (null != actionBar) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
         }
-
-
 
         initMsgs();
         inputText = findViewById(R.id.p2p_chat_edit_text);
@@ -117,10 +105,22 @@ public class P2PChatActivity extends BaseActivity implements ChatManager.P2PMess
         toUserId = getIntent().getStringExtra("toUserId");
         toUserNickName = getIntent().getStringExtra("toUserNickName");
 
+        mFriendIdTV = findViewById(R.id.friend_id);
+        mFriendIdTV.setText(toUserId);
+
         ChatManager.getInstance().registerP2PMessageReceivedListener(this);
     }
 
     private void initMsgs() {
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        msgList.clear();
+        msgList.addAll(ChatManager.getInstance().getFriendMessage(toUserId));
+        adapter.notifyDataSetChanged();
+        msgRecyclerView.scrollToPosition(msgList.size() - 1);
     }
 
     @Override
@@ -146,35 +146,5 @@ public class P2PChatActivity extends BaseActivity implements ChatManager.P2PMess
         super.onDestroy();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home: {
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                break;
-            }
-            case R.id.backup: {
-                Toast.makeText(this, "Your clicked Backup", Toast.LENGTH_SHORT).show();
-                break;
-            }
-            case R.id.delete: {
-                Toast.makeText(this, "Your clicked Delete", Toast.LENGTH_SHORT).show();
-                break;
-            }
-            case R.id.settings: {
-                Toast.makeText(this, "Your clicked Settings", Toast.LENGTH_SHORT).show();
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-        return true;
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar, menu);
-        return true;
-    }
 }

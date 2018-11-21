@@ -82,4 +82,10 @@ public class ChatClientHandler {
                 "success [" + success + "].");
         ChatManager.getInstance().onCreateMucRoom(roomId, roomTitle, success);
     }
+
+    public static void onGetMucRoomMembers(String roomId, List<String> members) {
+        Log.d(TAG, "onGetMucRoomMembers: roomId [" + roomId + ", " +
+                "members [" + members + "].");
+        ChatManager.getInstance().onGetMucRoomMembers(roomId, members, true);
+    }
 }

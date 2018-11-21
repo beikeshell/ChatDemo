@@ -16,6 +16,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.flyco.animation.Attention.Swing;
@@ -34,7 +37,8 @@ public class MainActivity extends BaseActivity {
     private ViewPager mMainFmnPagerVP;
     private BoomMenuButton mMainSettingBMB;
     private DrawerLayout mDrawerLayout;
-    private NavigationView mNavView;
+    private TextView mMainTitleTV;
+    private ImageView mToUserCenterIV;
 
     private Timer updateTimer;
 
@@ -42,29 +46,28 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        //setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
 
         mMainFmnTabTL = findViewById(R.id.main_fmn_tab);
         mMainFmnPagerVP = findViewById(R.id.main_fmn_pager);
         mMainFmnPagerVP.setAdapter(new PageAdapter(getSupportFragmentManager(), mMainFmnTabTL.getTabCount()));
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
-
-        mNavView= findViewById(R.id.nav_view);
-        mNavView.setCheckedItem(R.id.nav_call);
-        mNavView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+        mMainTitleTV = findViewById(R.id.main_title);
+        mToUserCenterIV = findViewById(R.id.main_to_user_center);
+        mToUserCenterIV.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                mDrawerLayout.closeDrawers();
-                return true;
+            public void onClick(View v) {
+                mDrawerLayout.openDrawer(GravityCompat.START);
             }
         });
 
-        ActionBar actionBar = getSupportActionBar();
+
+        /*ActionBar actionBar = getSupportActionBar();
         if (null != actionBar) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
-        }
+        }*/
 
 
         mMainFmnTabTL.setupWithViewPager(mMainFmnPagerVP);
@@ -129,35 +132,4 @@ public class MainActivity extends BaseActivity {
 
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home: {
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                break;
-            }
-            case R.id.backup: {
-                Toast.makeText(this, "Your clicked Backup", Toast.LENGTH_SHORT).show();
-                break;
-            }
-            case R.id.delete: {
-                Toast.makeText(this, "Your clicked Delete", Toast.LENGTH_SHORT).show();
-                break;
-            }
-            case R.id.settings: {
-                Toast.makeText(this, "Your clicked Settings", Toast.LENGTH_SHORT).show();
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar, menu);
-        return true;
-    }
 }

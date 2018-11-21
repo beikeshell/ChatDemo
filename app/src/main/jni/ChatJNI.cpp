@@ -445,6 +445,83 @@ struct TestChatClientHandler : ChatClientHandler {
             LOG(INFO) << member;
         }
 
+        //下面的逻辑需要独立出来
+        JNIEnv *env = JniHelper::getEnv();
+        if (nullptr == env) {
+            LOG(ERROR) << "the JNIEnv cannot is nullptr.";
+            return;
+        }
+        if (nullptr == chat_client_handler_class) {
+            jclass tmp = env->FindClass("com/tap4fun/chatdemo/ChatClientHandler");
+            chat_client_handler_class = (jclass)env->NewGlobalRef(tmp);
+            env->DeleteLocalRef(tmp);
+        }
+        if (nullptr == chat_client_handler_class) {
+            LOG(ERROR) << "Find class [com/tap4fun/chatdemo/ChatClientHandler] failed.";
+            return;
+        }
+
+        static jmethodID on_get_muc_room_members_method = nullptr;
+        if (nullptr == on_get_muc_room_members_method) {
+            on_get_muc_room_members_method = env->GetStaticMethodID(chat_client_handler_class, "onGetMucRoomMembers", 
+                "(Ljava/lang/String;Ljava/util/List;)V");
+        }
+        if (nullptr == on_get_muc_room_members_method) {
+            LOG(ERROR) << "Find method [" << "onGetMucRoomMembers" << "] failed!";
+            return;
+        }
+
+        static jclass muc_room_member_list_class = nullptr;
+        if (nullptr == muc_room_member_list_class) {
+            jclass tmp = env->FindClass("java/util/ArrayList");
+            muc_room_member_list_class = (jclass)env->NewGlobalRef(tmp);
+            env->DeleteLocalRef(tmp);
+        }
+        if (nullptr == muc_room_member_list_class) {
+            LOG(ERROR) << "Find class [java/util/ArrayList] failed.";
+            return;
+        }
+
+        static jmethodID muc_room_member_list_constructor = nullptr;
+        if (nullptr == muc_room_member_list_constructor) {
+            muc_room_member_list_constructor = env->GetMethodID(muc_room_member_list_class, "<init>", "()V");
+        }
+        if (nullptr == muc_room_member_list_constructor) {
+            LOG(ERROR) << "Find [mucRoomMember list constructor] failed.";
+            return;
+        }
+
+        static jmethodID muc_room_member_list_add_method = nullptr;
+        if (nullptr == muc_room_member_list_add_method) {
+            muc_room_member_list_add_method = env->GetMethodID(muc_room_member_list_class, "add", "(Ljava/lang/Object;)Z");
+        }
+        if (nullptr == muc_room_member_list_add_method) {
+            LOG(ERROR) << "Find [muc_room_member_list_add_method] failed.";
+            return;
+        }
+
+        jobject mucRoomMemberList = env->NewObject(muc_room_member_list_class, muc_room_member_list_constructor);
+        if (nullptr ==  mucRoomMemberList) {
+            LOG(ERROR) << "new List<String> failed.";
+            return;
+        }
+
+        for (const auto &item : member_list) {
+            jstring j_member = env->NewStringUTF(item.c_str());
+            if (nullptr == j_member) {
+                LOG(ERROR) << "new jstring [" << item << "] failed!";
+                continue;
+            } else {
+                env->CallBooleanMethod(mucRoomMemberList, muc_room_member_list_add_method, j_member);
+                env->DeleteLocalRef(j_member);
+            }
+        }
+        jstring j_roomId = env->NewStringUTF(room_cid.c_str());
+
+        env->CallStaticVoidMethod(chat_client_handler_class, on_get_muc_room_members_method, j_roomId, mucRoomMemberList);
+        env->DeleteLocalRef(j_roomId);
+        env->DeleteLocalRef(mucRoomMemberList);
+
     }
     void OnJoinMucRoom(const string &room_cid, bool success) override {
         if (success) {
@@ -629,6 +706,25 @@ extern "C" {
         std::string room_id_str = JniHelper::jstring2string(roomId);
         if (nullptr != TestChatClient) {
             TestChatClient->LeaveMucRoom(room_id_str);
+        }
+    }
+
+    JNIEXPORT void JNICALL Java_com_tap4fun_chatdemo_ChatJniInterface_getMucRoomMembers(JNIEnv *env, jobject obj, 
+        jstring roomId) {
+        LOG(INFO) << "Java_com_tap4fun_chatdemo_ChatJniInterface_getMucRoomMembers";
+        std::string room_id_str = JniHelper::jstring2string(roomId);
+        if (nullptr != TestChatClient) {
+            TestChatClient->GetMemberOfMucRoom(room_id_str);
+        }
+    }
+
+    JNIEXPORT void JNICALL Java_com_tap4fun_chatdemo_ChatJniInterface_inviteFriend(JNIEnv *env, jobject obj, 
+        jstring roomId, jobject ids) {
+        LOG(INFO) << "Java_com_tap4fun_chatdemo_ChatJniInterface_inviteFriend";
+        std::string room_id_str = JniHelper::jstring2string(roomId);
+        std::vector<String> friendIds;
+        if (nullptr != TestChatClient) {
+            TestChatClient->InviteToMucRoom(room_id_str, ids, true);
         }
     }
 

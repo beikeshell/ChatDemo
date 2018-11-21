@@ -51,6 +51,14 @@
             </intent-filter>
         </activity>
 
+        <!--邀请好友界面-->
+        <activity android:name=".InviteFriendActivity">
+            <intent-filter>
+                <action android:name="ACTION_INVITE_FRIEND"></action>
+                <category android:name="android.intent.category.DEFAULT"></category>
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>
