@@ -111,9 +111,10 @@ public class LoginActivity extends FullScreenActivity implements ChatManager.OnL
                     if (null == mPassword || mPassword.isEmpty()) { return; }
                     if (null == mServerIP || mServerIP.isEmpty()) { return; }
                     if (null == mServerPort || mServerPort.isEmpty()) { return; }
+                    mUserName = "local|2|g303|9001|" + mUserName + "@chat.pf.tap4fun.com";
 
                     //登录聊天服务器
-                    ChatManager.getInstance().login(mUserName, mNickName, mPassword, mServerIP, mServerPort);
+                    ChatManager.getInstance().login(mUserName, mPassword, mNickName, mServerIP, mServerPort);
                     mCatLoadingView = new CatLoadingView();
                     mCatLoadingView.show(getSupportFragmentManager(), "正在登录");
 

@@ -138,7 +138,11 @@ public class MucRoomListAdapter extends RecyclerView.Adapter<MucRoomListAdapter.
 
                         } else if (action.equals("邀请好友")) {
                             //邀请好友加入聊天室
-                            //TODO
+                            //邀请好友加入聊天室，启动邀请好友界面
+                            Intent intent = new Intent("ACTION_INVITE_FRIEND");
+                            intent.putExtra("mucRoomId", mucRoomItem.getId());
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            MyApplication.getContext().startActivity(intent);
                             Log.d(TAG, "onOperItemClick: invite friend");
                         }
                         dialog.dismiss();

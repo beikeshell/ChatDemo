@@ -39,7 +39,7 @@ public class FriendListFragment extends Fragment implements ChatManager.FriendLi
         recyclerView.setItemAnimator(new ScaleInAnimator());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-        mFriendListAdapter = new FriendListAdapter(friendItemList);
+        mFriendListAdapter = new FriendListAdapter(getActivity(), friendItemList);
         AnimationAdapter adapter = new ScaleInAnimationAdapter(mFriendListAdapter);
         adapter.setFirstOnly(false);
         adapter.setDuration(500);
@@ -59,14 +59,6 @@ public class FriendListFragment extends Fragment implements ChatManager.FriendLi
     private void initFriends() {
         friendItemList.clear();
         friendItemList.addAll(ChatManager.getInstance().getFriendList());
-        friendItemList.addAll(ChatManager.getInstance().getFriendList());
-        friendItemList.addAll(ChatManager.getInstance().getFriendList());
-        friendItemList.addAll(ChatManager.getInstance().getFriendList());
-        friendItemList.addAll(ChatManager.getInstance().getFriendList());
-        friendItemList.addAll(ChatManager.getInstance().getFriendList());
-        friendItemList.addAll(ChatManager.getInstance().getFriendList());
-        friendItemList.addAll(ChatManager.getInstance().getFriendList());
-        friendItemList.addAll(ChatManager.getInstance().getFriendList());
 
     }
 
@@ -76,14 +68,6 @@ public class FriendListFragment extends Fragment implements ChatManager.FriendLi
             @Override
             public void run() {
                 friendItemList.clear();
-                friendItemList.addAll(ChatManager.getInstance().getFriendList());
-                friendItemList.addAll(ChatManager.getInstance().getFriendList());
-                friendItemList.addAll(ChatManager.getInstance().getFriendList());
-                friendItemList.addAll(ChatManager.getInstance().getFriendList());
-                friendItemList.addAll(ChatManager.getInstance().getFriendList());
-                friendItemList.addAll(ChatManager.getInstance().getFriendList());
-                friendItemList.addAll(ChatManager.getInstance().getFriendList());
-                friendItemList.addAll(ChatManager.getInstance().getFriendList());
                 friendItemList.addAll(ChatManager.getInstance().getFriendList());
                 if (null != mFriendListAdapter) {
                     mFriendListAdapter.notifyDataSetChanged();

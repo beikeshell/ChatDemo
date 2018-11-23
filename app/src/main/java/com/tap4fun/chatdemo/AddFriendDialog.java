@@ -50,7 +50,8 @@ public class AddFriendDialog extends BaseDialog<AddFriendDialog> {
                 String friendId = mFriendIdET.getText().toString();
                 if (!friendId.isEmpty()) {
                     //TODO
-                    //ChatManager.getInstance().createMucRoom(roomId, roomTitle);
+                    friendId = "local|2|g303|9001|" + friendId + "@chat.pf.tap4fun.com";
+                    ChatManager.getInstance().sendFollowRequest(friendId, "");
                 }
                 dismiss();
             }

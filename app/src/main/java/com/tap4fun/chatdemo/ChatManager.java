@@ -3,6 +3,10 @@ package com.tap4fun.chatdemo;
 import android.util.Log;
 import android.widget.ListView;
 
+import com.flyco.animation.Attention.Swing;
+import com.flyco.dialog.listener.OnBtnClickL;
+import com.flyco.dialog.widget.NormalDialog;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -80,7 +84,7 @@ public class ChatManager {
         Log.d(TAG, "setCachePath: ");
         ChatJniInterface.setCachePath(path);
     }
-    public static void login(String userName, String nickName, String password, String IP, String port) {
+    public static void login(String userName, String password, String nickName, String IP, String port) {
         Log.d(TAG, "login: ");
         try {
             if (null != userName && !"".equals(userName)
@@ -90,7 +94,7 @@ public class ChatManager {
                     && null != port && !"".equals(port)) {
                 mUserId = userName;
                 mUserNickName = nickName;
-                ChatJniInterface.login(userName, nickName, password, IP, port);
+                ChatJniInterface.login(userName, password, nickName, IP, port);
             }
         } catch (NullPointerException e) {
             e.printStackTrace();
@@ -148,12 +152,17 @@ public class ChatManager {
     }
 
     public void setMucRoomList(List<MucRoomItem> rooms) {
-        mMucRoomList = rooms;
+        mMucRoomList.clear();
+        mMucRoomList.addAll(rooms);
         notifyMucRoomListChanged();
     }
 
     public void setFriendList(List<FriendItem> friends) {
-        mFriendList = friends;
+        mFriendList.clear();
+        mFriendList.addAll(friends);
+        for(FriendItem item : friends) {
+            Log.d(TAG, "setFriendList: friend id is [" + item.getId() + "].");
+        }
         notifyFriendListChanged();
     }
 
@@ -374,6 +383,9 @@ public class ChatManager {
 
     public void onGetMucRoomMembers(String mucRoomId, List<String> members, boolean success) {
         if (success) {
+            Log.d(TAG, "onGetMucRoomMembers: " +
+                    "mucRoomId" + mucRoomId +
+                    "memebers [" + members + "]");
             if (!mMucRoomMembersCache.containsKey(mucRoomId)) {
                 mMucRoomMembersCache.put(mucRoomId, new ArrayList<String>());
             }
@@ -394,6 +406,108 @@ public class ChatManager {
     public String getCurrentMucRoomId() { return mCurrentMucRoomId; }
 
     public void inviteFriend(String currentMucRoomId, List<String> ids) {
-        //ChatJniInterface.inviteFriend(currentMucRoomId, ids);
+        Log.d(TAG, "inviteFriend: currentMucRoomId [" + currentMucRoomId + "], ids [" + ids + "]");
+        if (null != currentMucRoomId && !currentMucRoomId.isEmpty()
+                && null != ids && !ids.isEmpty()) {
+            ChatJniInterface.inviteFriend(currentMucRoomId, ids);
+        }
     }
+
+    public void kickFromMucRoom(String mucRoomId, List<String> ids) {
+        Log.d(TAG, "kickFromMucRoom: mucRoomId is [" + mucRoomId + "], " +
+                "ids is [" + ids + "]");
+        if (null != mucRoomId && !mucRoomId.isEmpty()
+                && null != ids && !ids.isEmpty()) {
+            ChatJniInterface.kickFromMucRoom(mucRoomId, ids);
+        }
+    }
+
+    public void sendFollowRequest(String friendId, String hint) {
+        Log.d(TAG, "sendFollowRequest: friendId is [" + friendId + "], msg is [" + hint + "].");
+        if (null != friendId && !friendId.isEmpty() && null != hint) {
+            ChatJniInterface.sendFollowRequest(friendId, hint);
+        }
+    }
+
+    public void onFollowRequest(final String from, String msg) {
+        ActivityManager.getLastActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final NormalDialog dialog = new NormalDialog(ActivityManager.getLastActivity())
+                        .title("添加好友请求")
+                        .content(from + " 想与你成为好友\n是否同意？")
+                        .showAnim(new Swing());
+                dialog.setOnBtnClickL(
+                        new OnBtnClickL() {
+                            @Override
+                            public void onBtnClick() {
+                                ackFollowRequest(from, "", false);
+                                dialog.dismiss();
+                            }
+                        },
+
+                        new OnBtnClickL() {
+                            @Override
+                            public void onBtnClick() {
+                                ackFollowRequest(from, "", true);
+                                dialog.dismiss();
+                            }
+                        }
+                );
+                dialog.show();
+            }
+        });
+    }
+
+    public void onFollowResult(final String from, final boolean flag) {
+        final String msg = flag ? "添加成功" : "添加失败";
+        ActivityManager.getLastActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final NormalDialog dialog = new NormalDialog(ActivityManager.getLastActivity())
+                        .title("添加好友")
+                        .content(msg)
+                        .showAnim(new Swing());
+                dialog.setOnBtnClickL(
+                        new OnBtnClickL() {
+                            @Override
+                            public void onBtnClick() {
+                                dialog.dismiss();
+                            }
+                        }
+                );
+                dialog.show();
+            }
+        });
+    }
+
+    public void ackFollowRequest(String from, String msg, boolean agree) {
+        ChatJniInterface.ackFollowRequest(from, msg, agree ? 1 : 0);
+    }
+
+    public void unFollowRequest(String id) {
+        ChatJniInterface.unFollowRequest(id);
+    }
+
+    public void onUnFollow(final String from) {
+        ActivityManager.getLastActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final NormalDialog dialog = new NormalDialog(ActivityManager.getLastActivity())
+                        .title("解除好友关系")
+                        .content("已经与 " + from + " 解除好友关系")
+                        .showAnim(new Swing());
+                dialog.setOnBtnClickL(
+                        new OnBtnClickL() {
+                            @Override
+                            public void onBtnClick() {
+                                dialog.dismiss();
+                            }
+                        }
+                );
+                dialog.show();
+            }
+        });
+    }
+
 }

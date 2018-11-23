@@ -21,10 +21,14 @@ public class InviteFriendActivity extends BaseActivity {
     private InviteFriendAdapter mInviteFriendAdapter;
     private RecyclerView mRecycleView;
 
+    private String mMucRoomId;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_invite_friend);
+
+        mMucRoomId = getIntent().getStringExtra("mucRoomId");
 
         mRecycleView = findViewById(R.id.friend_list_recycler_view);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -32,9 +36,11 @@ public class InviteFriendActivity extends BaseActivity {
 
         mFriendList = ChatManager.getInstance().getFriendList();
 
-        mInviteFriendAdapter = new InviteFriendAdapter(mFriendList);
+        mInviteFriendAdapter = new InviteFriendAdapter(this, mFriendList);
 
         mRecycleView.setAdapter(mInviteFriendAdapter);
 
     }
+
+    public String getMucRoomId() { return mMucRoomId; }
 }

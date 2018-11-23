@@ -88,4 +88,21 @@ public class ChatClientHandler {
                 "members [" + members + "].");
         ChatManager.getInstance().onGetMucRoomMembers(roomId, members, true);
     }
+
+    public static void onFollowRequest(String from, String msg) {
+        Log.d(TAG, "onFollowRequest: from is [" + from + "], " +
+                "msg is [" + msg + "].");
+        ChatManager.getInstance().onFollowRequest(from, msg);
+    }
+
+    public static void onFollowResult(String from, int accepted) {
+        Log.d(TAG, "onFollowResult: from is [" + from + "], accepted is [" + accepted + "].");
+        boolean flag = accepted == 1 ? true : false;
+        ChatManager.getInstance().onFollowResult(from, flag);
+    }
+
+    public static void onUnFollow(String from) {
+        Log.d(TAG, "onUnFollow: from is [" + from + "].");
+        ChatManager.getInstance().onUnFollow(from);
+    }
 }

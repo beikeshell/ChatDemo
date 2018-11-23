@@ -76,11 +76,6 @@ public class MucRoomListFragment extends Fragment implements ChatManager.MucRoom
         Log.d(TAG, "initMucRooms: ");
         mucRoomList.clear();
         mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
-        mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
-        mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
-        mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
-        mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
-        mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
 
         for (MucRoomItem item : mucRoomList) {
             Log.d(TAG, "initMucRooms: " + item.getId());
@@ -94,11 +89,6 @@ public class MucRoomListFragment extends Fragment implements ChatManager.MucRoom
             @Override
             public void run() {
                 mucRoomList.clear();
-                mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
-                mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
-                mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
-                mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
-                mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
                 mucRoomList.addAll(ChatManager.getInstance().getMucRoomList());
                 if (null != mucRoomListAdapter) {
                     mucRoomListAdapter.notifyDataSetChanged();

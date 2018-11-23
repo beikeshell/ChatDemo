@@ -57,7 +57,7 @@
                 <EditText
                     android:textSize="18sp"
                     android:hint="用户名"
-                    android:text="local|2|g303|9001|65502569326393@chat.pf.tap4fun.com"
+                    android:text="65502569326393"
                     android:textColor="#2fa881"
                     android:id="@+id/user_name"
                     android:layout_width="match_parent"
@@ -84,7 +84,7 @@
                     <EditText
                         android:textSize="18sp"
                         android:hint="昵称"
-                        android:text="6mr48DVnMJ77"
+                        android:text="ABC"
                         android:textColor="#2fa881"
                         android:id="@+id/nick_name"
                         android:layout_width="match_parent"
@@ -110,7 +110,7 @@
                     <EditText
                         android:textSize="18sp"
                         android:hint="密码"
-                        android:text="ABC"
+                        android:text="6mr48DVnMJ77"
                         android:textColor="#2fa881"
                         android:id="@+id/password"
                         android:layout_width="match_parent"

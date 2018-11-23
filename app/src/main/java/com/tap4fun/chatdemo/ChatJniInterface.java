@@ -8,7 +8,7 @@ public class ChatJniInterface {
 
     public static native void setCachePath(String path);
 
-    public static native void login(String userId, String nickName, String password, String IP, String port);
+    public static native void login(String userId, String password, String nickName, String IP, String port);
 
     public static native void setGameSpecInfo(String gameId, String gameKey, String gameServerId);
 
@@ -24,5 +24,13 @@ public class ChatJniInterface {
 
     public static native void getMucRoomMembers(String mucRoomId);
 
-    //public static native void inviteFriend(String currentMucRoomId, List<String> ids);
+    public static native void inviteFriend(String roomId, List<String> userIds);
+
+    public static native void kickFromMucRoom(String roomId, List<String> userIds);
+
+    public static native void sendFollowRequest(String friendId, String hint);
+
+    public static native void ackFollowRequest(String from, String msg, int agree);
+
+    public static native void unFollowRequest(String id);
 }

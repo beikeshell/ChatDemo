@@ -237,13 +237,105 @@ struct TestChatClientHandler : ChatClientHandler {
     }
     
     void OnFollowRequest(const string &other, const string &extra_msg) override {
-        LOG(INFO) << "OnFollowRequest";
+        LOG(INFO) << "OnFollowRequest other is [" << other << "], extra_msg is [" << extra_msg;
+         //下面的逻辑需要独立出来
+        JNIEnv *env = JniHelper::getEnv();
+        if (nullptr == env) {
+            LOG(ERROR) << "the JNIEnv cannot is nullptr.";
+            return;
+        }
+        if (nullptr == chat_client_handler_class) {
+            jclass tmp = env->FindClass("com/tap4fun/chatdemo/ChatClientHandler");
+            chat_client_handler_class = (jclass)env->NewGlobalRef(tmp);
+            env->DeleteLocalRef(tmp);
+        }
+        if (nullptr == chat_client_handler_class) {
+            LOG(ERROR) << "Find class [com/tap4fun/chatdemo/ChatClientHandler] failed.";
+            return;
+        }
+        static jmethodID on_follow_request_method = nullptr;
+        if (nullptr == on_follow_request_method) {
+            on_follow_request_method = env->GetStaticMethodID(chat_client_handler_class,
+                "onFollowRequest", "(Ljava/lang/String;Ljava/lang/String;)V");
+        }
+        if (nullptr == on_follow_request_method) {
+            LOG(ERROR) << "Find method [" << "onFollowRequest" << "] failed.";
+            return;
+        }
+        jstring j_from = env->NewStringUTF(other.c_str());
+        jstring j_msg = env->NewStringUTF(extra_msg.c_str());
+        env->CallStaticVoidMethod(chat_client_handler_class, on_follow_request_method, j_from, 
+            j_msg);
+
     }
     void OnFollowResult(const string &other, bool accept) override {
-        LOG(INFO) << "OnFollowResult";
+        LOG(INFO) << "OnFollowResult. other is [" << other;
+         //下面的逻辑需要独立出来
+        JNIEnv *env = JniHelper::getEnv();
+        if (nullptr == env) {
+            LOG(ERROR) << "the JNIEnv cannot is nullptr.";
+            return;
+        }
+        if (nullptr == chat_client_handler_class) {
+            jclass tmp = env->FindClass("com/tap4fun/chatdemo/ChatClientHandler");
+            chat_client_handler_class = (jclass)env->NewGlobalRef(tmp);
+            env->DeleteLocalRef(tmp);
+        }
+        if (nullptr == chat_client_handler_class) {
+            LOG(ERROR) << "Find class [com/tap4fun/chatdemo/ChatClientHandler] failed.";
+            return;
+        }
+        static jmethodID on_follow_result_method = nullptr;
+        if (nullptr == on_follow_result_method) {
+            on_follow_result_method = env->GetStaticMethodID(chat_client_handler_class,
+                "onFollowResult", "(Ljava/lang/String;I)V");
+        }
+        if (nullptr == on_follow_result_method) {
+            LOG(ERROR) << "Find method [" << "onFollowResult" << "] failed.";
+            return;
+        }
+        jstring j_from = env->NewStringUTF(other.c_str());
+        jint accepted = accept ? 1 : 0;
+        env->CallStaticVoidMethod(chat_client_handler_class, on_follow_result_method, j_from, 
+            accepted);
+        if (accept) {
+            if (nullptr != TestChatClient) {
+                TestChatClient->FetchFriendsList();
+            }
+        }
     }
     void OnUnfollowRequest(const string &from) override {
         LOG(INFO) << "OnUnfollowRequest";
+       //下面的逻辑需要独立出来
+        JNIEnv *env = JniHelper::getEnv();
+        if (nullptr == env) {
+            LOG(ERROR) << "the JNIEnv cannot is nullptr.";
+            return;
+        }
+        if (nullptr == chat_client_handler_class) {
+            jclass tmp = env->FindClass("com/tap4fun/chatdemo/ChatClientHandler");
+            chat_client_handler_class = (jclass)env->NewGlobalRef(tmp);
+            env->DeleteLocalRef(tmp);
+        }
+        if (nullptr == chat_client_handler_class) {
+            LOG(ERROR) << "Find class [com/tap4fun/chatdemo/ChatClientHandler] failed.";
+            return;
+        }
+        static jmethodID on_unfollow_method = nullptr;
+        if (nullptr == on_unfollow_method) {
+            on_unfollow_method = env->GetStaticMethodID(chat_client_handler_class,
+                "onUnFollow", "(Ljava/lang/String;)V");
+        }
+        if (nullptr == on_unfollow_method) {
+            LOG(ERROR) << "Find method [" << "onUnFollow" << "] failed.";
+            return;
+        }
+        jstring j_from = env->NewStringUTF(from.c_str());
+        env->CallStaticVoidMethod(chat_client_handler_class, on_unfollow_method, j_from);
+
+        if (nullptr != TestChatClient) {
+            TestChatClient->FetchFriendsList();
+        }
     }
     void OnStatusChange(const string &other, int status) override {
         LOG(INFO) << "OnStatusChange";
@@ -316,6 +408,7 @@ struct TestChatClientHandler : ChatClientHandler {
         }
 
     }
+
     void OnGetMucRoomList(const MucRoomInfoList &room_list) override {
         LOG(INFO) << "OnGetMucRoomList";
         int i = 0;
@@ -543,9 +636,15 @@ struct TestChatClientHandler : ChatClientHandler {
     }
     void OnOtherLeaveMucRoom(const string &room_cid, const string &jid) override {
         LOG(INFO) << "OnOtherLeaveMucRoom : room_cid is [" << room_cid << "], user id is [" << jid << "]";
+        if (nullptr != TestChatClient) {
+            TestChatClient->GetMemberOfMucRoom(room_cid);
+        }
     }
     void OnOtherJoinMucRoom(const string &room_cid, const string &jid) override {
         LOG(INFO) << "OnOtherJoinMucRoom : room_cid is [" << room_cid << "], user id is [" << jid <<"]";
+        if (nullptr != TestChatClient) {
+            TestChatClient->GetMemberOfMucRoom(room_cid);
+        }
     }
 };
 
@@ -572,7 +671,7 @@ extern "C" {
     }
 
     JNIEXPORT void JNICALL Java_com_tap4fun_chatdemo_ChatJniInterface_login(JNIEnv *env, jobject obj,
-        jstring user_name, jstring nick_name, jstring password, jstring IP, jstring port) {
+        jstring user_name, jstring password, jstring nick_name, jstring IP, jstring port) {
         LOG(INFO) << "Java_com_tap4fun_chatdemo_ChatJniInterface_login";
         const char *c_user_name = env->GetStringUTFChars(user_name, nullptr);
         const char *c_nick_name = env->GetStringUTFChars(nick_name, nullptr);
@@ -600,7 +699,7 @@ extern "C" {
                                                   "ABC",
                                                   "e.portal-platform.t4f.cn",
                                                     30065); */
-            TestChatClient->Login(user_name_str, nick_name_str, password_str, ip_str, std::stoi(port_str));
+            TestChatClient->Login(user_name_str, password_str, nick_name_str, ip_str, std::stoi(port_str));
         }
     }
 
@@ -713,6 +812,7 @@ extern "C" {
         jstring roomId) {
         LOG(INFO) << "Java_com_tap4fun_chatdemo_ChatJniInterface_getMucRoomMembers";
         std::string room_id_str = JniHelper::jstring2string(roomId);
+
         if (nullptr != TestChatClient) {
             TestChatClient->GetMemberOfMucRoom(room_id_str);
         }
@@ -722,9 +822,136 @@ extern "C" {
         jstring roomId, jobject ids) {
         LOG(INFO) << "Java_com_tap4fun_chatdemo_ChatJniInterface_inviteFriend";
         std::string room_id_str = JniHelper::jstring2string(roomId);
-        std::vector<String> friendIds;
+        
+
+        static jclass id_list_class = nullptr;
+        if (nullptr == id_list_class) {
+            jclass tmp = env->FindClass("java/util/List");
+            id_list_class = (jclass)env->NewGlobalRef(tmp);
+            env->DeleteLocalRef(tmp);
+        }
+        if (nullptr == id_list_class) {
+            LOG(ERROR) << "find class [" << "java/util/List" << "] failed.";
+            return;
+        }
+        if (!env->IsInstanceOf(ids, id_list_class)) {
+            LOG(ERROR) << "ids type error!";
+            return;
+        }
+        static jmethodID size_method = nullptr;
+        if (nullptr == size_method) {
+            size_method = env->GetMethodID(id_list_class, "size", "()I");
+        }
+        if (nullptr == size_method) {
+            LOG(ERROR) << "find method size() failed!";
+            return;
+        }
+        static jmethodID get_method = nullptr;
+        if (nullptr == get_method) {
+            get_method = env->GetMethodID(id_list_class, "get", "(I)Ljava/lang/Object;");
+        }
+        if (nullptr == get_method) {
+            LOG(ERROR) << "find method get() failed!";
+            return;
+        }
+        std::vector<std::string> friendIds;
+        jint id_list_size = env->CallIntMethod(ids, size_method);
+        for (int i = 0; i < id_list_size; ++i) {
+            jstring j_id = (jstring)env->CallObjectMethod(ids, get_method, i);
+            if (nullptr == j_id) {
+                LOG(ERROR) << "id is nullptr at position " << i;
+                continue;
+            }
+            std::string id_str = JniHelper::jstring2string(j_id);
+            friendIds.push_back(id_str);
+            env->DeleteLocalRef(j_id);
+        }
         if (nullptr != TestChatClient) {
-            TestChatClient->InviteToMucRoom(room_id_str, ids, true);
+            TestChatClient->InviteToMucRoom(room_id_str, friendIds, true);
+        }
+    }
+
+    JNIEXPORT void JNICALL Java_com_tap4fun_chatdemo_ChatJniInterface_kickFromMucRoom(JNIEnv *env, jobject obj, 
+        jstring roomId, jobject ids) {
+        LOG(INFO) << "Java_com_tap4fun_chatdemo_ChatJniInterface_kickFromMucRoom";
+        std::string room_id_str = JniHelper::jstring2string(roomId);
+        
+
+        static jclass id_list_class = nullptr;
+        if (nullptr == id_list_class) {
+            jclass tmp = env->FindClass("java/util/List");
+            id_list_class = (jclass)env->NewGlobalRef(tmp);
+            env->DeleteLocalRef(tmp);
+        }
+        if (nullptr == id_list_class) {
+            LOG(ERROR) << "find class [" << "java/util/List" << "] failed.";
+            return;
+        }
+        if (!env->IsInstanceOf(ids, id_list_class)) {
+            LOG(ERROR) << "ids type error!";
+            return;
+        }
+        static jmethodID size_method = nullptr;
+        if (nullptr == size_method) {
+            size_method = env->GetMethodID(id_list_class, "size", "()I");
+        }
+        if (nullptr == size_method) {
+            LOG(ERROR) << "find method size() failed!";
+            return;
+        }
+        static jmethodID get_method = nullptr;
+        if (nullptr == get_method) {
+            get_method = env->GetMethodID(id_list_class, "get", "(I)Ljava/lang/Object;");
+        }
+        if (nullptr == get_method) {
+            LOG(ERROR) << "find method get() failed!";
+            return;
+        }
+        std::vector<std::string> friendIds;
+        jint id_list_size = env->CallIntMethod(ids, size_method);
+        for (int i = 0; i < id_list_size; ++i) {
+            jstring j_id = (jstring)env->CallObjectMethod(ids, get_method, i);
+            if (nullptr == j_id) {
+                LOG(ERROR) << "id is nullptr at position " << i;
+                continue;
+            }
+            std::string id_str = JniHelper::jstring2string(j_id);
+            friendIds.push_back(id_str);
+            env->DeleteLocalRef(j_id);
+        }
+        if (nullptr != TestChatClient) {
+            TestChatClient->KickFromMucRoom(room_id_str, friendIds);
+        }
+    }
+
+    JNIEXPORT void JNICALL Java_com_tap4fun_chatdemo_ChatJniInterface_sendFollowRequest(JNIEnv *env, jobject obj, 
+        jstring userId, jstring msg) {
+        LOG(INFO) << "Java_com_tap4fun_chatdemo_ChatJniInterface_sendFollowRequest";
+        std::string user_id_str = JniHelper::jstring2string(userId);
+        std::string msg_str = JniHelper::jstring2string(msg);
+        if (nullptr != TestChatClient) {
+            TestChatClient->SendFollowRequest(user_id_str, msg_str);
+        }
+    }
+
+    JNIEXPORT void JNICALL Java_com_tap4fun_chatdemo_ChatJniInterface_ackFollowRequest(JNIEnv *env, jobject obj, 
+        jstring userId, jstring msg, jint agree) {
+        LOG(INFO) << "Java_com_tap4fun_chatdemo_ChatJniInterface_ackFollowRequest";
+        std::string user_id_str = JniHelper::jstring2string(userId);
+        std::string msg_str = JniHelper::jstring2string(msg);
+        bool agreed = (agree == 1) ? true : false;
+        if (nullptr != TestChatClient) {
+            TestChatClient->AckFollowRequest(user_id_str, msg_str, agreed);
+        }
+    }
+
+    JNIEXPORT void JNICALL Java_com_tap4fun_chatdemo_ChatJniInterface_unFollowRequest(JNIEnv *env, jobject obj, 
+        jstring userId) {
+        LOG(INFO) << "Java_com_tap4fun_chatdemo_ChatJniInterface_unFollowRequest";
+        std::string user_id_str = JniHelper::jstring2string(userId);
+        if (nullptr != TestChatClient) {
+            TestChatClient->Unfollow(user_id_str);
+            TestChatClient->FetchFriendsList();
         }
     }
 

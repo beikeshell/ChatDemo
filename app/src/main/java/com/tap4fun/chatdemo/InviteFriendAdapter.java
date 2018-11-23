@@ -1,5 +1,6 @@
 package com.tap4fun.chatdemo;
 
+import android.content.ContentProvider;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -15,6 +16,7 @@ import java.util.List;
 
 public class InviteFriendAdapter extends RecyclerView.Adapter<InviteFriendAdapter.ViewHolder> {
     private List<FriendItem> mFriendList;
+    private InviteFriendActivity mContext;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView friendImage;
@@ -31,8 +33,9 @@ public class InviteFriendAdapter extends RecyclerView.Adapter<InviteFriendAdapte
         }
     }
 
-    public InviteFriendAdapter(List<FriendItem> friendList) {
+    public InviteFriendAdapter(InviteFriendActivity context, List<FriendItem> friendList) {
         this.mFriendList = friendList;
+        this.mContext = context;
     }
 
     @NonNull
@@ -49,7 +52,7 @@ public class InviteFriendAdapter extends RecyclerView.Adapter<InviteFriendAdapte
                 String id = friendItem.getId();
                 List<String> ids = new ArrayList<>();
                 ids.add(id);
-                ChatManager.getInstance().inviteFriend(ChatManager.getInstance().getCurrentMucRoomId(), ids);
+                ChatManager.getInstance().inviteFriend(mContext.getMucRoomId(), ids);
                 if (null != ActivityManager.getLastActivity()) {
                     ActivityManager.getLastActivity().finish();
                 }
